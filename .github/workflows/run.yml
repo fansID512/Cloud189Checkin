@@ -14,7 +14,8 @@ jobs:
     environment: user
     env:
       # 只暴露用到的密钥；整包 toJSON(secrets) 会被 GitHub 判定为高风险，run 直接卡在 action_required
-      TY_ACCOUNTS: ${{ secrets.TY_ACCOUNTS }}
+      # TY_ACCOUNTS 在下方步骤过滤后通过 GITHUB_ENV 注入
+      TY_ACCOUNTS_RAW: ${{ secrets.TY_ACCOUNTS }}
       EXEC_THRESHOLD: ${{ secrets.EXEC_THRESHOLD }}
       SHOWDOC_KEY: ${{ secrets.SHOWDOC_KEY }}
       WX_PUSHER_UID: ${{ secrets.WX_PUSHER_UID }}
@@ -46,6 +47,17 @@ jobs:
 
       - name: 📡 Init dependencies
         run: npm install
+
+      - name: 🚫 排除失效账号 156****2001
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const list = JSON.parse(process.env.TY_ACCOUNTS_RAW || '[]');
+          const kept = list.filter((a) => !(String(a.userName).startsWith('156') && String(a.userName).endsWith('2001')));
+          console.log(`账号过滤: ${list.length} -> ${kept.length}`);
+          if (kept.length === list.length) console.log('警告: 未匹配到 156****2001');
+          fs.appendFileSync(process.env.GITHUB_ENV, 'TY_ACCOUNTS=' + JSON.stringify(kept) + '\n');
+          EOF
 
       - name: 🚀 Run
         uses: nick-fields/retry@master
