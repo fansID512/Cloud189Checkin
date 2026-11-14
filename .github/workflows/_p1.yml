@@ -1,9 +1,0 @@
-name: p1-env
-on:
-  workflow_dispatch:
-jobs:
-  p1:
-    runs-on: ubuntu-latest
-    environment: user
-    steps:
-      - run: echo p1

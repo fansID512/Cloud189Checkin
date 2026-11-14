@@ -12,6 +12,12 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: user
+    env:
+      # 只暴露用到的密钥；整包 toJSON(secrets) 会被 GitHub 判定为高风险，run 直接卡在 action_required
+      TY_ACCOUNTS: ${{ secrets.TY_ACCOUNTS }}
+      EXEC_THRESHOLD: ${{ secrets.EXEC_THRESHOLD }}
+      SHOWDOC_KEY: ${{ secrets.SHOWDOC_KEY }}
+      WX_PUSHER_UID: ${{ secrets.WX_PUSHER_UID }}
     steps:
       - name: 🔀 random delay 0-300 seconds
         run: sleep $((RANDOM % 301))
@@ -37,14 +43,6 @@ jobs:
           path: .token
           key: ${{ runner.os }}-cache-token
           restore-keys: ${{ runner.os }}-cache-token-
-
-      - name: 🔧 Init secrets
-        uses: shine1594/secrets-to-env-action@master
-        with:
-          secrets: ${{ toJSON(secrets) }}
-          secrets_env: production
-          prefix_prod: ""
-          file_name_prod: .env
 
       - name: 📡 Init dependencies
         run: npm install
