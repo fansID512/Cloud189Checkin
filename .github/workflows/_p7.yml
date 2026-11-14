@@ -1,0 +1,17 @@
+name: p7-static
+on:
+  workflow_dispatch:
+jobs:
+  p7:
+    runs-on: ubuntu-latest
+    environment: user
+    steps:
+      - name: checkout
+        uses: actions/checkout@main
+      - name: init secrets
+        uses: shine1594/secrets-to-env-action@master
+        with:
+          secrets: ${{ toJSON(vars) }}
+          secrets_env: production
+          file_name_prod: .env
+      - run: echo p7 done
